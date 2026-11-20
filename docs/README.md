@@ -19,6 +19,7 @@ Design and product docs for Tumpel.
 ## RFCs
 
 - [RFC: Connectors](RFC-TUM-Connectors.md)
+- [RFC: Delivery, build, release and deploy redesigned from first principles](RFC-TUM-Delivery.md)
 - [RFC: Events, one ordered log of domain events per tenant](RFC-TUM-Events.md)
 - [RFC: Foreman, a session that turns its crew's events into its own turns](RFC-TUM-Foreman.md)
 - [RFC: Prebuilds and build providers](RFC-TUM-Prebuilds.md)
