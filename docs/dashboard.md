@@ -1,0 +1,169 @@
+# Dashboard requirements
+
+## Summary
+
+The dashboard is the browser cockpit for one Tumpel tenant. A person signs in and runs hosts, harnesses, personas, secrets, connections, prebuilds, members and sessions, and watch transcripts live. Built on Vite, React, TanStack Query and TanStack Router, it calls the public API through the generated client only, so every screen below names its operations.
+
+## Users and jobs
+
+A small team of owners and members shares a tenant.
+
+1. Start a session on a repository and one of its issues, and watch the turn live.
+2. Steer a running session with the next prompt, then stop or archive it.
+3. Enrol a host, see its state and usage, set its labels and revoke it.
+4. Pin harness versions and keep personas, their files and their secret sets.
+5. Connect GitHub, build providers and later other services.
+6. See each repository's latest prebuild and rebuild it.
+7. Invite a teammate by email and remove them again.
+8. Sign in and set up a new tenant on one page.
+
+## First run
+
+A new operator signs in through Access at the stage's dashboard origin and finishes setup there. The CLI and the device page stay for automation and agents.
+
+When the Access email holds no tenant, the consent page asks for the tenant name that `Tenants_signUp` takes, under the wizard's header and stepper. It then finishes the same sign-in (G22) and opens `/t/<tenantId>/setup`.
+
+The setup wizard has six steps at `/t/<tenantId>/setup/<step>`. `/t/<tenantId>/setup` opens the first step that reads not done. Each step reads its state from the API, again on tab focus and on Check now. The overview shows Resume setup until the first five read done.
+
+| Step      | The step                                                                                                                                         | Done when                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| Tenant    | Shows the tenant's name                                                                                                                          | `Identity_whoami` answers                                                       |
+| GitHub    | Sends the tab to the `installUrl` of `GitHubConnections_start`, which returns to `/t/<tenantId>/setup/github?from=github` (G10)                  | `GitHubConnections_list` holds an Active installation                           |
+| Host      | On request, calls `EnrolmentTokens_mint` and shows its `installCommand` fed the `token` on stdin, with the expiry and a copy control             | `Hosts_list` holds a host that is not Revoked                                   |
+| claude.ai | Shows the stage's MCP URL, `<api origin>/mcp`, with a copy control and how to add it in claude.ai as a custom connector                              | `OAuthGrants_list` holds a grant from https://claude.ai                         |
+| Persona   | Writes a Claude token, pasted or from Set up Claude Code, and a GitHub token while the App is not installed, to the Default persona's secret set | A persona's secret set holds an unexpired credential for its harness's provider |
+| Done      | Sums up the five steps                                                                                                                           |                                                                                 |
+
+The Secret sets page imports a `TenantConfig` file and shows each schema error with its JSON pointer. It asks for each file a `from` names and each env-sourced value, in password fields. It shows the plan from G23 with its deletes and applies it on confirm (G24).
+
+## Sign-in and tenancy
+
+The dashboard signs in through the control plane's OAuth with PKCE, behind the Cloudflare Access consent page. The token belongs to one principal and one of its tenants. `Identity_whoami` names both.
+
+The tenant id leads every URL: `/t/<tenantId>/sessions/<sessionId>/turns/<turnId>`. Filters sit in the query string, so a reload or a shared link opens the same view. The header's tenant switcher lists the tenants of the signed-in email and keeps one token per tenant. Picking a tenant without a token runs the consent for that tenant and returns to the same path under the new tenant id.
+
+## Screens
+
+| Screen      | Shows and does                                                                     | Operations                                                                                                                                                                               |
+| ----------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview    | Host states, box slots, sessions by state, expiring tokens, connection state       | `Hosts_list`, `Hosts_listUsage`, `Sessions_list`, `SecretSets_list`, G5, G13                                                                                                             |
+| Sessions    | Sessions filtered by state and host; start, stop, archive one or many              | `Sessions_list`, `Sessions_start`, `Sessions_startFromIssue`, `Sessions_stop`, `Sessions_archive`, `Personas_list`, `GitHubConnections_listRepositories`, `GitHubConnections_listIssues` |
+| Session     | Turns, live transcript, next prompt, failures, snapshots, handovers, stop failures | `Sessions_get`, `Turns_list`, `Turns_get`, `Turns_send`, `Turns_getFailure`, `Transcripts_read`, `Snapshots_list`, `Sessions_listCredentialHandovers`, `Sessions_listStopFailures`       |
+| Hosts       | Hosts with state, version, labels and usage; enrol, relabel, revoke                | `Hosts_list`, `Hosts_get`, `Hosts_listUsage`, `EnrolmentTokens_mint`, `Hosts_setLabels`, `Hosts_revoke`, G14                                                                             |
+| Harnesses   | The catalog and the tenant's pins; pin and unpin                                   | `HarnessCatalog_list`, `HarnessCatalog_listPins`, `HarnessCatalog_pin`, `HarnessCatalog_unpin`                                                                                           |
+| Personas    | Personas with harness, secret set and files; create, edit, delete                  | `Personas_list`, `Personas_get`, `Personas_create`, `Personas_update`, `Personas_delete`, `Personas_uploadFile`, `HarnessCatalog_list`                                                   |
+| Secrets     | Secret sets with member names, kinds, providers and expiries; create, edit, delete | `SecretSets_list`, `SecretSets_get`, `SecretSets_create`, `SecretSets_update`, `SecretSets_delete`                                                                                       |
+| Connections | Each connection with its state and account; connect, disconnect                    | `GitHubConnections_get`, `GitHubConnections_list`, `GitHubConnections_start`, `GitHubConnections_delete`, G5, G10, G15, G16, G17                                                         |
+| Prebuilds   | The latest prebuild of each repository; rebuild                                    | `GitHubConnections_listRepositories`, G18, G19, G20, G21                                                                                                                                 |
+| Members     | Members with role, open invites; invite, revoke, remove                            | G2, G3, G4                                                                                                                                                                               |
+| Account     | The signed-in principal and its devices; sign a device out                         | `Identity_whoami`, `Devices_list`, `Devices_revoke`                                                                                                                                      |
+
+## Screen rules
+
+Start a session reads GitHub as not connected from the `GitHubNotConnected` refusal of `GitHubConnections_listRepositories`, and shows Connect GitHub in place of the pickers. A start from an issue that does not exist is refused 404 `IssueNotFound`, and the form shows the refusal under the Issue field. Enrolment shows the minted token and its install command once, with the expiry. The persona file editor lists only the paths the catalog lists for the persona's harness. Per-harness config is the persona's files.
+
+Archive sits next to Stop, and Stop and archive calls `Sessions_archive` for each selected session.
+
+Secret values go into a password field and travel once, in the create or update call. The API holds every value back. Editing a set shows each member's value as stored. A value is sent only for a member whose value changes. A renamed member keeps its stored value, and a removed member loses its value alone. A subscription token past its `expiresAt` reads Expired and names the fix.
+
+Creating a secret set is a wizard. Step 1 names the set, prefilled with a two-word suggestion, and creates it empty. Step 2 picks what to add: an API key or token, an Anthropic subscription, OpenRouter, or a Codex subscription. Step 3 is that choice's form. Add a secret on an existing set opens the same wizard at step 2. The API key or token form shows each field once the one before it has a value; the provider and type fill in the variable name from the harness catalog. Adding a secret replaces a stored credential for the same provider.
+
+Set up Claude Code sits beside the Claude token field of the persona step and in the wizard's Anthropic subscription step. It calls `ClaudeSetups_start` for that set and shows a panel driven by `ClaudeSetups_get`. The panel reads the setup every second while it runs and stops once it completes or fails.
+
+| State        | The panel shows                                                                                                                                                                              |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Starting     | The box boots, with the pinned Claude Code version                                                                                                                                           |
+| AwaitingCode | The `signInUrl` with a copy control and a link that opens it in a new tab, "Sign in, then paste the code in the field below", the code field with focus, and the time left until `codeDueAt` |
+| Minting      | Claude Code makes the token and the box stores it                                                                                                                                            |
+| Completed    | The member name and its expiry, Next, and a live region that announces the save                                                                                                              |
+| Failed       | The reason (`SetupUrlMissing`, `CodeRejected`, `SetupTimedOut`, `TokenNotStored`) with the detail and fix, Start a new setup and the report link                                             |
+
+A `NoHostOnline` refusal of the start shows its Problem with Add a host, which opens the host step. The code goes once to `ClaudeSetups_submitCode` from a password field, which empties on send. It never reaches a URL, browser storage, the query cache or a log.
+
+## Connections
+
+A connection links the tenant to an outside service. Every connection has the same three states and the same three actions:
+
+| State         | Meaning                                               | Action                       |
+| ------------- | ----------------------------------------------------- | ---------------------------- |
+| NotConfigured | The stage has no app for the service                  | Open the one-time setup page |
+| NotConnected  | The stage has an app and the tenant has not linked it | Connect                      |
+| Connected     | The tenant holds a link to one or more accounts       | Disconnect                   |
+
+For GitHub, NotConfigured is `GitHubConnections_get` reading `AppMissing`, whose `setupUrl` opens `/github/app/setup`. Connected shows every installation the tenant holds from `GitHubConnections_list`: its login, which opens the installation's settings on GitHub, and a Disconnect button for an Owner. While the list loads it shows skeleton rows, and when it fails a problem with Try again. **Add new** sends the browser to the `installUrl` of `GitHubConnections_start` with no `gitHubAccountId`, so GitHub shows its account and organization picker at `https://github.com/apps/<app-slug>/installations/new`. The picker shows Configure for an account that already has the App; saving there returns through `setup_action=update` (the manifest sets `setup_on_update`), which links that installation the same way. GitHub returns to `/github/app/installed`, which links the installation and sends the browser back with `from=github`, adding `refused=<GitHubInstallRefusal>&account=<login>` or `failed=<detail>`; the card shows an alert for a refusal or a failure ([github-multi-install.md](github-multi-install.md)) (G10). Disconnect sits on each installation, is for an Owner, and calls `GitHubConnections_delete` with its `installationId`. It removes that installation only and says to uninstall the App on GitHub too.
+
+A later service adds its own operation group with `get`, `start` and `delete`, and one row in `Connections_list` (G5).
+
+### Build providers
+
+A build provider is a connection kind that runs prebuilds on the tenant's own account and bills the tenant ([RFC: Prebuilds](RFC-TUM-Prebuilds.md)). Each card shows its state, the billing account and the trust material, each value with a copy control:
+
+| Provider       | Connect                                                                                                           | Billing account            | Trust material                                                                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub Actions | The installed App, plus a caller workflow in the repository that calls Tumpel's reusable workflow at a pinned tag | The installation's account | The caller workflow                                                                                                                             |
+| Namespace      | A one-time registration of the stage's issuer with Namespace Support for the tenant's workspace                   | The Namespace workspace    | The stage's issuer URL, subject `tenant:<tenantId>:persona:<personaName>:job:prebuild`, audience `federation.namespaceapis.com` |
+
+## Prebuilds
+
+The Prebuilds screen lists each repository the tenant has prebuilt with its latest prebuild (G18). A row shows the state (Dispatched, Building, Converting, Done or Failed), the provider, the input digest, start and finish times, the layer size and a link to the provider's log. Rebuild starts a job even when a prebuild with the same key is stored (G21).
+
+A row shows only the latest prebuild, so a Failed one leaves the row once a newer one starts. The repository's side panel keeps the failure until a later prebuild succeeds. It names the phase that failed (dispatch, build, upload or conversion), the detail with its fix, and the log link.
+
+## Fleet overview
+
+The overview shows these numbers:
+
+- Hosts by state: Enrolled, Online, Offline, Revoked.
+- Per host: the `ReportedHostUsage` fields, free slots (capacity minus running minus warm) and the last report time.
+- Sessions by state, by host and by harness.
+- Subscription tokens by `expiresAt`, soonest first, with expired ones marked.
+- Each connection's state.
+
+The session page shows each turn, snapshot, credential handover and stop failure of one session. Failed turns across the tenant need G13.
+
+The overview refreshes on window focus and after each action. Only the live transcript reads on a timer.
+
+## Live transcript
+
+The view reads `Transcripts_read` with `turnId` and the last cursor, as the RFC decides. When a page moves the cursor, the next read starts at once. Otherwise the view waits 250 ms, doubling to 5 s, as `tumpel transcript read --follow` does. A page that reads `finished` ends the reads, and a Failed turn then shows its `Turns_getFailure` reason and detail.
+
+A compact toggle passes `compact` for a Claude Code turn and is hidden for other harnesses. On reload, the view reads the turn from its first line.
+
+## Errors and signed-out state
+
+Every refusal is a `Problem`. The dashboard shows its `title`, `detail` and `fix`, plus a prefilled link that reports an issue. A 401 switches the whole app to a signed-out state: a persistent notice and a sign-in control that returns to the same URL. On a 403 the view shows Forbidden with its fix. Neither ever renders as an empty list. An empty list names the way to add the first item. An unreachable control plane shows a retry control.
+
+## Dashboard operations
+
+Each signed-in addition also gets an MCP tool and a CLI command.
+
+1. G1 `Identity_listTenants`, and a tenant choice on the consent page. An email holds one principal, which belongs to tenants through memberships.
+2. G2 `Members_list`, with roles.
+3. G3 `Invitations_create`, `_list` and `_revoke`, and a browser-only `_accept` like `Tenants_signUp`.
+4. G4 `Members_remove`, which signs out the member's devices.
+5. G5 `Connections_list`: each connection kind with its state and account.
+6. G6 `GitHubConnections_delete`.
+7. G10 `GitHubConnections_start` takes a return URL on the dashboard's origin.
+8. G13 `Turns_listForTenant`, filtered by state and start time.
+9. G14 The supervisor version the stage serves.
+10. G15 `Connections_list` holds the build providers with their billing account.
+11. G16 `GitHubActionsConnections_get`, `_start` and `_delete`, with the caller workflow to copy.
+12. G17 `NamespaceConnections_get`, `_start` and `_delete`. `get` answers the issuer, subject pattern and audience.
+13. G18 `Prebuilds_start`, `Prebuilds_list` per repository, `Prebuilds_listLatest` for the newest prebuild of each repository, and `Prebuilds_get` (FR-1).
+14. G19 `Prebuild` carries start and finish times, layer bytes and the provider's log URL.
+15. G20 `Prebuilds_getFailure`: the failed phase and its fix (FR-5).
+16. G21 A rebuild flag on `Prebuilds_start`.
+17. G22 The consent page signs up an Access email with no tenant for the client `tumpel-dashboard`: a form, `Tenants_signUp`, then the same consent.
+18. G23 `TenantConfigs_plan`: takes a `TenantConfig` and each persona file's digest by its `from` path. It answers each create, update and delete, as `tumpel config plan` prints them.
+19. G24 `TenantConfigs_apply`: takes the same document, each persona file's bytes inline or by digest, and the value of every variable the file names. It applies the plan as `tumpel config apply` does and writes only the values it carries; a kept secret set keeps its values unless every value it names is sent. Its MCP tool refuses values, as the secret-set tools do.
+20. G25 `OAuthGrants_list`: the OAuth clients that hold a live token for the caller, with name, redirect origin and last use. `Devices_list` holds device sign-ins only.
+
+## Open questions
+
+1. Does the dashboard register through `OAuth_register` like an MCP client, or ship as a fixed client?
+2. Where does the model list come from? The catalog names a provider and no models.
+3. How does Tumpel learn that Namespace Support registered the issuer for a workspace?
+
+## FAQ
+
+**Can the dashboard read a secret value?** No. The API returns no value.
