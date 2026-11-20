@@ -20,6 +20,7 @@ The demo is at https://dev.tumpel.dev. Tumpel is in full open-source mode right 
 
 ## What it does
 
+- MCP first. Tumpel was built and bootstrapped from a simple MCP all the way up to a fully functioning service, giving you a complete and well-defined MCP that is capable of rebuilding Tumpel on its own.
 - Any harness with any subscription. Personas combine any subscription or token source with any harness, so you pick and match the right agent and subscription for the job.
 - Self-hosted. Run on your own hardware, whether an OVH box, a recycled box, a Hetzner box, an EC2 instance or the desktop under your desk.
 - Control plane and data plane separated by design. The full control plane runs on Cloudflare Workers at near-zero cost per month.
