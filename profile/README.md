@@ -16,6 +16,7 @@ The demo is at https://dev.tumpel.dev. Tumpel is in full open-source mode right 
 6. What can be created can be read back, through the API, MCP and the CLI. Only secret values stay write-only.
 7. CI time is priority zero. Every change keeps cutting it.
 8. Cost is a signal. A rising bill points at a design problem, and the design changes until the bill falls.
+9. Parity across services. The dashboard, MCP, API and CLI share the same feature set.
 
 ## What it does
 
