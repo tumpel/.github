@@ -1,0 +1,85 @@
+{
+  "personas": [
+    {
+      "name": "proof",
+      "harness": "ClaudeCode",
+      "secretSetName": "proof",
+      "connectorNames": [],
+      "files": [
+        { "path": ".claude/settings.json", "from": "proof/settings.json" },
+        { "path": ".claude/CLAUDE.md", "from": "proof-tenant/CLAUDE.md" }
+      ]
+    },
+    {
+      "name": "refused",
+      "harness": "ClaudeCode",
+      "secretSetName": "refused",
+      "connectorNames": [],
+      "files": [{ "path": ".claude/settings.json", "from": "proof/settings.json" }]
+    },
+    {
+      "name": "ticket-worker",
+      "harness": "ClaudeCode",
+      "secretSetName": "ticket-worker",
+      "connectorNames": [],
+      "files": [
+        { "path": ".claude/settings.json", "from": "ticket-worker/settings.json" },
+        { "path": ".claude/CLAUDE.md", "from": "ticket-worker/CLAUDE.md" }
+      ]
+    }
+  ],
+  "secretSets": [
+    {
+      "name": "proof",
+      "secrets": [
+        {
+          "kind": "SubscriptionToken",
+          "name": "CLAUDE_CODE_OAUTH_TOKEN",
+          "provider": "Anthropic",
+          "expiresAt": { "env": "PROOF_CLAUDE_CODE_OAUTH_TOKEN_EXPIRES_AT" },
+          "valueFrom": { "env": "PROOF_CLAUDE_CODE_OAUTH_TOKEN" }
+        },
+        {
+          "kind": "Variable",
+          "name": "GITHUB_TOKEN",
+          "valueFrom": { "env": "PROOF_GITHUB_TOKEN" }
+        }
+      ]
+    },
+    {
+      "name": "refused",
+      "secrets": [
+        {
+          "kind": "ApiKey",
+          "name": "ANTHROPIC_API_KEY",
+          "provider": "Anthropic",
+          "valueFrom": { "env": "PROOF_REFUSED_KEY" }
+        },
+        {
+          "kind": "Variable",
+          "name": "GITHUB_TOKEN",
+          "valueFrom": { "env": "PROOF_GITHUB_TOKEN" }
+        }
+      ]
+    },
+    {
+      "name": "ticket-worker",
+      "secrets": [
+        {
+          "kind": "SubscriptionToken",
+          "name": "CLAUDE_CODE_OAUTH_TOKEN",
+          "provider": "Anthropic",
+          "expiresAt": { "env": "PROOF_CLAUDE_CODE_OAUTH_TOKEN_EXPIRES_AT" },
+          "valueFrom": { "env": "PROOF_CLAUDE_CODE_OAUTH_TOKEN" }
+        },
+        {
+          "kind": "Variable",
+          "name": "GITHUB_TOKEN",
+          "valueFrom": { "env": "PROOF_GITHUB_TOKEN" }
+        }
+      ]
+    }
+  ],
+  "harnessPins": [],
+  "hosts": []
+}
