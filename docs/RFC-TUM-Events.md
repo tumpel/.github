@@ -6,6 +6,8 @@
 | Scope   | Design only; the tenant Durable Object, the public API, MCP, the CLI, the dashboard, webhooks and Web Push                                                                  |
 | Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [EDD-002](002-host-channel.md), [EDD-005](005-mcp-and-cli.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 An event is a record that something happened in a tenant: a turn completed, a session went idle, a host went offline. Today no client learns of a change until it reads again. This RFC gives each tenant one durable, ordered event log in the tenant Durable Object. The control plane appends an event in the same transaction that changes the state it reports. Each event has an increasing `eventId`, so a client resumes from the last id it saw and misses nothing.
@@ -120,7 +122,7 @@ A channel would need a local stdio server, a place on Anthropic's allowlist and 
 
 Decision D7: an Owner registers a webhook endpoint with a URL and a list of event types. Operations `WebhookEndpoints_create`, `_list`, `_get` and `_delete` follow [API](api.md) rule 5. A new `WebhookSender` Durable Object, one per endpoint, keeps the endpoint's cursor and an alarm. After each append, the tenant Durable Object pokes the senders whose filter matches. A sender reads `ListEvents` after its cursor and POSTs each event as JSON, in order. It moves its cursor on a 2xx answer.
 
-On a failure, the sender's alarm retries after 1 minute, doubling to 1 hour. After 3 days of failure, the endpoint reads `Failing` with the last status, and the sender stops until an Owner recreates the endpoint. Delivery is at least once. A receiver drops a repeated `eventId`.
+On a failure, the sender's alarm retries after 1 minute and doubles the wait each time. After 10 retries, the endpoint reads `Failing` with the last status, and the sender stops until an Owner recreates the endpoint. Delivery is at least once. A receiver drops a repeated `eventId`.
 
 The control plane signs each request with an Ed25519 key per tenant, which the key-store port derives. `GET /v1/webhook-signing-key` returns the public key. No signing secret exists, so none travels over MCP ([API](api.md) rule 6).
 

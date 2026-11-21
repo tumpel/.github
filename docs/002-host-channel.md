@@ -2,6 +2,8 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md).
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 Each host keeps one persistent two-way connection to the control plane, and the host always opens it. TypeSpec defines the protocol without reference to a transport. It covers the handshake, messages, ordering, heartbeats, close codes and budgets. Cloudflare is the first backend, with one Durable Object per host holding a hibernating WebSocket.

@@ -2,6 +2,8 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md).
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 The supervisor runs each session in a Firecracker microVM, the box, on a tenant's Linux host with KVM. A box boots from a read-only image shared by digest and keeps the session's own files on a separate writable drive. Between turns, the supervisor pauses the box for the warm window and tears it down after the window, once a snapshot holds its last turn. `tumpel-supervisor install` prepares the host once with sudo, and from then on the supervisor runs as an ordinary user.

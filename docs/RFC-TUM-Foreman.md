@@ -6,6 +6,8 @@
 | Scope   | Design only; the tenant Durable Object, the public API, MCP, the CLI, the connector token endpoint and the event catalogue                                                                                                                                                                                                |
 | Related | [RFC: Events](RFC-TUM-Events.md), [RFC: Connectors](RFC-TUM-Connectors.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [ADR 007: turn goal](007-turn-goal-on-harness-goal-feature.md), [Claude Code goal docs](https://code.claude.com/docs/en/goal), [EDD-006](006-end-to-end-proof.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A foreman is an ordinary harness session with a plan, a goal and a list of events to react to. Each time one of those events happens, Tumpel sends the foreman a new turn. The turn holds the plan, the event and the goal. The foreman picks the next step, such as a session on the next issue. A goal keeps it working, and it calls `Subscriptions_complete` once the goal holds. A foreman that needs a decision pauses with a short message and waits for a reply.

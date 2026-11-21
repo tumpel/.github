@@ -2,6 +2,8 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md). It adds OR-8 to OR-17 and changes the handshake of [EDD-002](002-host-channel.md) and the release order of [EDD-008](008-supervisor-self-update.md).
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 Each host keeps two connections to the control plane. The small, frozen control channel names the host, the versions each side speaks, and when to update. The data channel carries turns, transcripts and snapshots, and its shape changes with most releases. There, each side names its oldest and newest version, and the pair speaks the newest both know. The control plane keeps one to three data versions side by side. A release drops the oldest only when no counted host speaks it. A host offline past a global grace of 3 days becomes Lapsed and stops counting. Only a release deploys the control plane, after its supervisor publishes and passes the gate.

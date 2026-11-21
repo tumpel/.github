@@ -6,6 +6,8 @@
 | Scope   | Design only; MCP and API; no benchmarks                                                                                                                                                                                                                                                                       |
 | Related | [Credentials](003-credentials.md), [MCP and CLI](005-mcp-and-cli.md), [The proof](006-end-to-end-proof.md), [Protocol compatibility](009-protocol-compatibility.md), [ADR 007](007-connector-forwarder.md), [ADR 008](008-connector-dynamic-client-registration.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A connector is a remote MCP server that a tenant connects once, with one credential. A persona lists its connectors. Each session copies that list when it starts. An Owner starts OAuth from chat, and the browser returns to the Worker's callback.

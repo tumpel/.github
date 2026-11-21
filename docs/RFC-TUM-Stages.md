@@ -6,6 +6,8 @@
 | Scope   | Design only; the split into backend, infra and deploy repositories, `packages/control-plane/infra`, both `wrangler.jsonc` files, releases, CI runners |
 | Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [ADR-001](001-control-plane-on-cloudflare.md), [Deploy](https://github.com/tumpel/deploy/blob/main/doc/deploy.md), mvhenten/tumpel#291                   |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A stage is one complete, isolated control plane: its Workers, D1 database, R2 buckets, queue, Access application, tokens and hostnames. Tumpel runs one stage, `dev`, and its values sit in 34 places across this repository and two others.
