@@ -4,7 +4,7 @@
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Accepted                                                                                                                                                                                                                                                    |
 | Scope   | Design only; the release workflows of every component repository, the assembly and promotion jobs in tumpel/deploy, the supervisor updater, the Workers Builds projects, CI runners and Cloudflare tokens                                                   |
-| Related | [RFC: Stages](https://github.com/mvhenten/tumpel/blob/main/doc/RFC/RFC-TUM-Stages.md), [EDD-008: Supervisor self-update](008-supervisor-self-update.md), [EDD-009: Protocol compatibility](009-protocol-compatibility.md), [ADR 000: tenets](000-tenets.md) |
+| Related | [RFC: Stages](RFC-TUM-Stages.md), [EDD-008: Supervisor self-update](008-supervisor-self-update.md), [EDD-009: Protocol compatibility](009-protocol-compatibility.md), [ADR 000: tenets](000-tenets.md) |
 
 ## Summary
 

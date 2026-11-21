@@ -23,6 +23,7 @@ Design and product docs for Tumpel.
 - [RFC: Events, one ordered log of domain events per tenant](RFC-TUM-Events.md)
 - [RFC: Foreman, a session that turns its crew's events into its own turns](RFC-TUM-Foreman.md)
 - [RFC: Prebuilds and build providers](RFC-TUM-Prebuilds.md)
+- [RFC: Stages, one infrastructure definition instantiated per stage](RFC-TUM-Stages.md)
 - [RFC: Tenant API, a versioned contract for the tenant Durable Object](RFC-TUM-TenantApi.md)
 - [RFC: Triggers, sessions that start from an external event](RFC-TUM-Triggers.md)
 - [RFC: Tumpel, harnesses on any hardware](RFC-TUM-Tumpel.md)
