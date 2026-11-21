@@ -6,6 +6,8 @@
 | Scope   | Design only; the GitHub webhook in the Worker, the tenant config, the tenant Durable Object, the session token scope, the public API, MCP and the CLI                                                                            |
 | Related | [RFC: Foreman](RFC-TUM-Foreman.md), [RFC: Events](RFC-TUM-Events.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [Tenant config](config.md), [ADR 000: tenets](000-tenets.md), [EDD-006](006-end-to-end-proof.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A trigger starts a new session when an external event matches it. It holds a source, an event type, a list of conditions on the event's payload, a persona and a prompt template. GitHub is the first source, through the stage's existing GitHub App. Triggers are generic: a trigger names any event type the App receives and filters on any field of its webhook payload. Triggers live in the tenant config file.

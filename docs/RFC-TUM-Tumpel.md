@@ -5,6 +5,8 @@
 | Status  | Proposed                                                                                                                                                                                                                                                                            |
 | Related | [ADR-001](001-control-plane-on-cloudflare.md), [ADR-002](002-multi-harness-provider-keys.md), [ADR-003](003-host-channel-dials-out-provider-agnostic.md), [ADR-004](004-typespec-to-rust-via-secondary-tooling.md), [ADR-005](005-hosted-mcp.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 Tumpel runs coding agent harnesses on machines a tenant owns, including desktops at home, and drives them over MCP. A small Rust program on each machine, the supervisor, dials out to a control plane on Cloudflare. It runs every session in its own Firecracker microVM. A session is one conversation with one harness. A turn is one prompt and the harness's answer to it. The control plane hands each turn the provider credential it needs and keeps the transcript. After a turn, the supervisor copies the session's changed files to cold storage, so a session outlives its microVM and its host. People and agents call Tumpel through a hosted MCP server or the `tumpel` CLI, and both are clients of one public API.
@@ -19,7 +21,7 @@ Tumpel runs coding agent harnesses on machines a tenant owns, including desktops
 - **Workers in TypeScript.** Cloudflare Workers in TypeScript. Only what sign-in and routing need before the tenant is known is stored centrally; everything else per tenant, in its own SQLite database.
 - **No standing secrets.** No shared secrets anywhere, and no standing credential on a host.
 - **Events drive the lifecycle.** Nothing sweeps and nothing polls.
-- **Every phase has a time limit and a named failure.** Fail fast, with no retries and no fallbacks.
+- **Every phase has a time limit and a named failure.** Fail fast, with no fallbacks. A retry backs off exponentially and fails hard after 10 retries.
 - **Agents prove it.** No human browser step is a precondition for the proof that the system works.
 - **Design for end-to-end validation in every stage.** `npm run proof:e2e` runs the EDD-006 proof against each stage after its deploy.
 
@@ -143,7 +145,7 @@ Cloudflare hosts the control plane (ADR-001). Tumpel is multi-harness, with pers
 
 **Snapshot bytes move on presigned URLs.** The control plane signs an upload URL for each pack and for each snapshot's root, and download URLs for a restore. Memory state never leaves the host.
 
-**Snapshots are chunked and packed.** Only the chunks the tenant lacks leave the host. The host cuts each changed file into content-defined chunks and concatenates the new ones into packs of about 8 MiB. An archive deletes the packs that hold no remaining chunk and never repacks (EDD-004). The cost is a host chunk cache with no eviction, and packs that a failed snapshot leaves in storage.
+**Snapshots are chunked and packed.** Only the chunks the tenant lacks leave the host. The host cuts each changed file into content-defined chunks and concatenates the new ones into packs of about 8 MiB. The manifest in R2 holds every chunk list, and the tenant database holds one row per snapshot. Retention deletes the packs that no manifest names and never repacks (EDD-004). The cost is a host chunk cache with no eviction, and packs that a failed snapshot leaves in storage.
 
 ### Runtime and surface
 

@@ -6,6 +6,8 @@
 | Scope   | Design only; the release workflows of every component repository, the assembly and promotion jobs in tumpel/deploy, the supervisor updater, the Workers Builds projects, CI runners and Cloudflare tokens                                                   |
 | Related | [RFC: Stages](RFC-TUM-Stages.md), [EDD-008: Supervisor self-update](008-supervisor-self-update.md), [EDD-009: Protocol compatibility](009-protocol-compatibility.md), [ADR 000: tenets](000-tenets.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 Each component repository publishes immutable releases, built once, with a sha256 per asset. A job in tumpel/deploy assembles a release candidate, `rc-N`, from the newest release of each component and attaches its pins. A second job promotes one RC to one stage: it checks the bytes, applies infrastructure and migrations, uploads pre-built Worker versions, runs a smoke check and writes `current.json` last. A failed smoke check restores the previous Worker versions.

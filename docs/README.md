@@ -54,6 +54,7 @@ Design and product docs for Tumpel.
 - [008. Connectors register OAuth clients through dynamic client registration only](008-connector-dynamic-client-registration.md)
 - [008. A snapshot follows every turn](008-snapshot-after-every-turn.md)
 - [009. Every turn's GitHub token reaches every installation](009-turn-token-reaches-every-installation.md)
+- [010. The database holds metadata, and bulk data lives in R2](010-bulk-data-out-of-the-database.md)
 
 ## Personas
 
@@ -70,6 +71,7 @@ Design and product docs for Tumpel.
 - [Commits and pull requests](commits-and-prs.md)
 - [Data modeling](data-modeling.md)
 - [Errors](errors.md)
+- [Storage](storage.md)
 - [Tests](tests.md)
 - [TypeScript](typescript.md)
 - [TypeSpec](typespec.md)

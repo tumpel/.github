@@ -2,9 +2,11 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md).
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
-A snapshot is every file in a box's overlay upper directory, stored as a manifest plus chunks. The host cuts each changed file into chunks and uploads only the chunks the tenant lacks, packed together, on presigned URLs, so the host holds no storage key. A fresh box rebuilds the session from the latest snapshot alone. Transcript lines carry a number per session that never restarts, and the control plane stores them in chunks in object storage.
+A snapshot is every file in a box's overlay upper directory, stored as a manifest plus chunks. R2 holds the manifest, its chunk lists and the packs, and the tenant database holds one row per snapshot that points at them. The host cuts each changed file into chunks and uploads only the chunks the tenant lacks, packed together, on presigned URLs, so the host holds no storage key. A fresh box rebuilds the session from the latest snapshot alone. Transcript lines carry a number per session that never restarts, and the control plane stores them in chunks in object storage.
 
 ## Taking a snapshot
 
@@ -26,21 +28,21 @@ The supervisor cuts each changed regular file with content-defined chunking. Chu
 
 The manifest lists every entry of the upper directory. A file's entry lists its chunks, each as digest, pack, offset and length. The supervisor encodes the manifest and cuts it with the same chunker, and its chunks travel like file chunks. Under the snapshot's storage key sits a small SnapshotRoot that names the manifest's chunks.
 
-The supervisor concatenates new chunks into packs of about 8 MiB, with no header. Each pack is stored under `<tenantId>/packs/<sha256 of the pack>`. The tenant's `chunks` table holds each placement, keyed by digest and pack, and its `packs` table holds each pack's size.
+The supervisor concatenates new chunks into packs of about 8 MiB, with no header. Each pack is stored under `<tenantId>/packs/<sha256 of the pack>`. The manifest holds each placement. No tenant table holds a row per chunk or per pack.
 
 ## Uploading a snapshot
 
 The exchange runs in lockstep parts of up to 500 chunks. The host sends a part only after the answer to the one before has arrived.
 
-1. SnapshotChunks names the digests that the box's last snapshot lacked. SnapshotChunksHeld answers with the placement of each digest the tenant already holds.
+1. SnapshotChunks names the digests that the box's last snapshot lacked. SnapshotChunksHeld answers with the placement of each digest the tenant already holds, read from manifests in R2.
 2. The host packs the rest. SnapshotPacks names the new packs and placements. SnapshotPackUploads answers with a presigned PUT for each pack the tenant lacks. Each URL signs `x-amz-checksum-sha256`, so object storage refuses bytes that do not match the pack's digest.
 3. The host uploads the packs, then the root, then sends SnapshotDone. Its `uploadedBytes` counts the packs plus the root.
 
-Once the root exists, the control plane records the snapshot and its placements. A SnapshotDone that arrives after NotAnswered still records them, because the host builds its next snapshot on this one.
+Once the root exists, the control plane records the snapshot as one row: the root's storage key, the manifest's digest, the uploaded bytes and the chunk and pack counts. A SnapshotDone that arrives after NotAnswered still records it, because the host builds its next snapshot on this one.
 
 ## Restoring a session
 
-Each turn offer names the latest stored snapshot, with a download URL for its root. With no warm box for the session, the supervisor fetches the root. It asks for the chunks it lacks in RestoreChunks parts grouped by pack, first the manifest's chunks and then the files' chunks. RestoreDownloads answers each part with a presigned GET per pack. The control plane answers a pack only when every chunk asked in it belongs to the session at that placement. Restore URLs expire at the offer time plus `turnOfferTtlSeconds`.
+Each turn offer names the latest stored snapshot, with a download URL for its root. With no warm box for the session, the supervisor fetches the root. It asks for the chunks it lacks in RestoreChunks parts grouped by pack, first the manifest's chunks and then the files' chunks. RestoreDownloads answers each part with a presigned GET per pack. The control plane answers a pack only when every chunk asked in it belongs to the snapshot's manifest at that placement. Restore URLs expire at the offer time plus `turnOfferTtlSeconds`.
 
 The supervisor starts each part's downloads as its answer arrives. It downloads a whole pack when the host chunk cache (EDD-001) lacks half or more of it, and fetches ranges otherwise. The supervisor checks each chunk against its digest and reassembles the files into a tar archive. The archive carries nanosecond mtimes as PAX records, so the restored entries match the manifest. Birth times are new after a restore, so the next snapshot reads every file again.
 
@@ -68,11 +70,11 @@ The control plane refuses `tumpel session stop` while the session's host is offl
 
 ## Retention
 
-A stored snapshot supersedes the older snapshots of its session. Before the control plane stores a snapshot, it reads the manifest. In the same transaction it records every chunk the manifest names and trims the session's `session_chunks` to them. It then deletes the older roots and records. A chunk stays live while a snapshot's manifest names it, a snapshot still uploading placed it or was told the tenant holds it, or a session's `session_chunks` holds it. A chunk that loses its last reference is deleted 24 hours later, followed by the packs no chunk lies in. Snapshots stored before this change have their manifests read once, and a missing root is logged and skipped. A stored prebuild archives the earlier prebuilds of its repository on the same image once no session is still restoring from them.
+A stored snapshot supersedes the older snapshots of its session, and the control plane deletes their roots and rows. A pack stays while the manifest of a stored snapshot, a snapshot still uploading or a stored prebuild names it. A pack that loses its last such manifest is deleted 24 hours later. How the control plane finds that pack from the manifests in R2 is open. A stored prebuild archives the earlier prebuilds of its repository on the same image once no session is still restoring from them.
 
 ## Archive
 
-An archive takes a Stopped session only, and any other gets `SessionNotStopped`. It deletes the session's snapshot roots and records. In one transaction it then deletes the chunk rows that no other session holds, the session's `session_chunks` rows and the pack rows that no chunk row points at. It then deletes those pack objects, so a failed delete leaves objects in storage and never a row for a deleted object. The control plane never repacks, so a pack with one live chunk stays whole. The archive keeps the transcript chunks readable and sets the session Archived. Every later send and stop gets `SessionArchived`.
+An archive takes a Stopped session only, and any other gets `SessionNotStopped`. It deletes the session's snapshot rows, then their roots, so a failed delete leaves an object in R2 and never a row for a deleted object. The session's packs follow the retention rule above. The control plane never repacks, so a pack with one live chunk stays whole. The archive keeps the transcript chunks readable and sets the session Archived. Every later send and stop gets `SessionArchived`.
 
 ## FAQ
 

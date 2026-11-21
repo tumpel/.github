@@ -2,6 +2,8 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md).
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A persona names one secret set. Only that set's values and a GitHub App token for the session's repository reach its sessions. The control plane keeps every value encrypted under one data key per tenant, which a Worker secret wraps. When it sends a turn offer, it decrypts the set's values and puts them in the offer. In the box, the guest exports them into the harness's environment. Every handover leaves an audit record with names and no values.

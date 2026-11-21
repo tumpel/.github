@@ -5,6 +5,8 @@
 | Status  | Proposed                                                                                                                                                                      |
 | Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [EDD-003](003-credentials.md), [EDD-004](004-snapshots-and-transcripts.md), [Dashboard requirements](dashboard.md) |
 
+Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+
 ## Summary
 
 A prebuild installs a repository's dependencies once, ahead of any session, and stores the result. A box then starts with that work done. Tumpel runs no build on its own machines. A tenant host belongs to the tenant, so a build on that host meets this rule. Each tenant sets one target for its prebuilds: one of its hosts, GitHub Actions, or CircleCI. A CI provider bills the tenant. Every provider hands back the same thing: a container image layer, uploaded to Tumpel's object storage on presigned URLs. Tumpel stores that layer in the same chunk and pack store as snapshots, so a box reads one format whatever built it. Tumpel is also an OpenID Connect issuer. A tenant's cloud account and build provider can then trust short-lived tokens that Tumpel signs, and no tenant stores a cloud key in Tumpel. This RFC adds to RFC: Tumpel and replaces none of it.
@@ -27,7 +29,7 @@ At a session's first turn, the control plane reads those files through the GitHu
 
 ### The output contract
 
-Every provider uploads an OCI image layer to presigned object storage URLs that the control plane signs per prebuild. The control plane then cuts the layer into chunks with the snapshot chunker and stores them in the tenant's packs. Chunks the tenant already holds are not stored twice. Boxes only ever see packs. So a provider adapter ends at the upload, and no box code knows which provider built its layer.
+Every provider uploads an OCI image layer to presigned object storage URLs that the control plane signs per prebuild. The control plane then cuts the layer into chunks with the snapshot chunker and stores them in the tenant's packs in R2, with the chunk list in a manifest beside them. The prebuild's row holds the manifest's key, digest and size. Chunks the tenant already holds are not stored twice. Boxes only ever see packs. So a provider adapter ends at the upload, and no box code knows which provider built its layer.
 
 ### The build provider port
 
