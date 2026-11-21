@@ -4,7 +4,7 @@
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Status  | Approved (2026-11-18)                                                                                                                                                                                                    |
 | Scope   | Design only; the Worker, the HostChannel and SessionTimer Durable Objects as callers of the tenant Durable Object                                                                                                        |
-| Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [ADR-001](001-control-plane-on-cloudflare.md), [EDD-002](002-host-channel.md), [EDD-009](009-protocol-compatibility.md) |
+| Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [ADR-001](https://github.com/tumpel/control-plane/blob/main/doc/adr/001-control-plane-on-cloudflare.md), [EDD-002](002-host-channel.md), [EDD-009](009-protocol-compatibility.md) |
 
 ## Summary
 
@@ -22,7 +22,7 @@ Three more shape changes since 2026-11-01 cross the same stub:
 2. A change that released boxes held for no live session renamed `failLostTurns` to `reconcileHeldBoxes`. The HostChannel Durable Object calls it, so a HostChannel instance on new code and a tenant instance on old code fail the same way `listConnectors` did.
 3. The change that added connectors added a required field to a persona read and a method, the two failures of that deploy.
 
-[Errors](errors.md) rule 6 requires validation of external input once, at the boundary. Under skew, a call from another code version is external input, and the tenant Durable Object validates none of it. [Errors](errors.md) rule 3 forbids the fix that incident rules out: a handler that accepts an old shape.
+[Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md) rule 6 requires validation of external input once, at the boundary. Under skew, a call from another code version is external input, and the tenant Durable Object validates none of it. [Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md) rule 3 forbids the fix that incident rules out: a handler that accepts an old shape.
 
 ## Requirements
 
@@ -30,7 +30,7 @@ Three more shape changes since 2026-11-01 cross the same stub:
 2. R2: The contract is explicit and versioned, with schemas validated at the Durable Object boundary. Source: the request for a versioned internal API.
 3. R3: Within a version, only additive changes land. Source: the request for a versioned internal API.
 4. R4: An older caller is served, or answered with a retryable error. Source: the request for a versioned internal API.
-5. R5: Handlers never accept an old shape. Source: the 2026-11-18 deploy, [Errors](errors.md) rule 3.
+5. R5: Handlers never accept an old shape. Source: the 2026-11-18 deploy, [Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md) rule 3.
 6. R6: The migration ships in slices of one PR each. Source: the request for a versioned internal API.
 
 ## The current surface
@@ -58,7 +58,7 @@ Decision D1: the tenant Durable Object exposes one RPC method, `handle(request: 
 
 A `TenantRequest` carries `tenantApiVersion`, `operation` and `input`. `operation` names one operation, the way a path names a REST operation. `input` is one named object per operation. Positional arguments go, so the `updatedAt` misbinding cannot recur. `tenantId` and `now` stay explicit input fields, because every caller has both and tests pin `now`.
 
-A `TenantResponse` carries the operation's result, or a refusal. Each result variant is its own model ([TypeSpec](typespec.md) rule 6). A public model, such as `Persona` or `SecretSet`, appears in a result by reference.
+A `TenantResponse` carries the operation's result, or a refusal. Each result variant is its own model ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 6). A public model, such as `Persona` or `SecretSet`, appears in a result by reference.
 
 The Worker and both Durable Object callers reach the tenant through one client, `tenantApi(env, tenantId)`. It builds the request, calls `handle` and returns the parsed result. The Durable Object parses the request against the operation's input schema, runs the operation and returns its result. A request that fails the schema answers `TenantRequestInvalid` with the zod issues, and the caller fails the operation with a 500 that names the operation.
 
@@ -68,11 +68,11 @@ Decision D2: TypeSpec in the protocol package defines the Tenant API, in the nam
 
 Zod in the control plane costs less per change: one change, with no protocol release first. It loses three things:
 
-1. Tenet 4 of [000. Tenets](000-tenets.md) makes TypeSpec the single source of truth, and [TypeSpec](typespec.md) rule 1 names the host channel, an internal contract, as part of it.
+1. Tenet 4 of [000. Tenets](https://github.com/tumpel/control-plane/blob/main/doc/adr/000-tenets.md) makes TypeSpec the single source of truth, and [TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 1 names the host channel, an internal contract, as part of it.
 2. The 2026-11-18 deploy failed on a public model, `Persona`, inside a tenant result. A Tenant API that references public models in one TypeSpec program sees such a change. A hand-written zod copy in control-plane does not see that a tarball bump changed a model it returns.
 3. The protocol package already runs a wire lock and its guard for the host channel (EDD-009). The Tenant API reuses both and writes no second guard.
 
-A tenant change ships the way a public change ships today ([TypeSpec](typespec.md) rule 2): a protocol release, then a control-plane change that bumps the three tarball URLs.
+A tenant change ships the way a public change ships today ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 2): a protocol release, then a control-plane change that bumps the three tarball URLs.
 
 ## Versions and skew
 
@@ -93,7 +93,7 @@ Decision D4: one deploy of skew is the design point. Every caller ships in the s
 
 ## Refusals
 
-Decision D5: the tenant Durable Object answers a request it cannot serve with a typed refusal. It returns the refusal as a result value, because the outcome is expected during a deploy ([Errors](errors.md) rule 5).
+Decision D5: the tenant Durable Object answers a request it cannot serve with a typed refusal. It returns the refusal as a result value, because the outcome is expected during a deploy ([Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md) rule 5).
 
 | Refusal                       | When                                                                                  | Carries                               |
 | ----------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------- |

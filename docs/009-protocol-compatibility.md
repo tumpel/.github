@@ -2,7 +2,7 @@
 
 An appendix of [RFC: Tumpel](RFC-TUM-Tumpel.md). It adds OR-8 to OR-17 and changes the handshake of [EDD-002](002-host-channel.md) and the release order of [EDD-008](008-supervisor-self-update.md).
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 

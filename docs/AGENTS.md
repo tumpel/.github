@@ -1,17 +1,17 @@
 # Agent rules
 
-Read [000. Tenets](000-tenets.md) first. Its tenets bind every change.
+Read [000. Tenets](https://github.com/tumpel/control-plane/blob/main/doc/adr/000-tenets.md) first. Its tenets bind every change.
 
-Always follow [Errors](errors.md), [Coding standards](coding-standards.md) and [Architecture](architecture.md).
+Always follow [Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md), [Coding standards](https://github.com/tumpel/control-plane/blob/main/rules/coding-standards.md) and [Architecture](https://github.com/tumpel/control-plane/blob/main/rules/architecture.md).
 
-- When writing TypeScript, follow [TypeScript](typescript.md).
-- When a change needs a new or changed type, follow [TypeSpec](typespec.md).
-- When changing a table, a migration or a stored record, follow [Data modeling](data-modeling.md).
-- When storing data, adding a retry or adding an endpoint, follow [Storage](storage.md).
-- When adding or changing an operation, an MCP tool, a CLI command or the host channel, follow [API](api.md).
-- When writing or changing a test, follow [Tests](tests.md).
-- When committing or opening a pull request, follow [Commits and pull requests](commits-and-prs.md).
-- When writing text a user reads, docs, an issue or a PR body, follow [Writing](writing.md).
+- When writing TypeScript, follow [TypeScript](https://github.com/tumpel/control-plane/blob/main/rules/typescript.md).
+- When a change needs a new or changed type, follow [TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md).
+- When changing a table, a migration or a stored record, follow [Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md).
+- When storing data, adding a retry or adding an endpoint, follow [Storage](https://github.com/tumpel/control-plane/blob/main/rules/storage.md).
+- When adding or changing an operation, an MCP tool, a CLI command or the host channel, follow [API](https://github.com/tumpel/control-plane/blob/main/rules/api.md).
+- When writing or changing a test, follow [Tests](https://github.com/tumpel/control-plane/blob/main/rules/tests.md).
+- When committing or opening a pull request, follow [Commits and pull requests](https://github.com/tumpel/control-plane/blob/main/rules/commits-and-prs.md).
+- When writing text a user reads, docs, an issue or a PR body, follow [Writing](https://github.com/tumpel/control-plane/blob/main/rules/writing.md).
 
 ## Commands
 

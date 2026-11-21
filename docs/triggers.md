@@ -1,6 +1,6 @@
 # Triggers: product review and configuration UX
 
-This doc checks [RFC: Triggers](RFC-TUM-Triggers.md) against three use cases, then designs how a person configures a trigger: MCP and the CLI first, the dashboard as a mirror of the same model. It proposes changes to the RFC. Each one that changes the API needs the owner's approval ([API](api.md) rule 4) and lands as an RFC revision.
+This doc checks [RFC: Triggers](RFC-TUM-Triggers.md) against three use cases, then designs how a person configures a trigger: MCP and the CLI first, the dashboard as a mirror of the same model. It proposes changes to the RFC. Each one that changes the API needs the owner's approval ([API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 4) and lands as an RFC revision.
 
 ## Part 1: product review
 
@@ -119,7 +119,7 @@ The server's `INSTRUCTIONS` gain one line: to react to a GitHub event, create a 
 
 ### CLI
 
-Every value comes from a flag or a file ([API](api.md) rule 7).
+Every value comes from a flag or a file ([API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 7).
 
 | Command                                     | Flags                                                                                                                                                                 |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

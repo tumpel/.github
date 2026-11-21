@@ -4,9 +4,9 @@
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Approved (2026-11-18)                                                                                                                                                                                                                                                                                         |
 | Scope   | Design only; MCP and API; no benchmarks                                                                                                                                                                                                                                                                       |
-| Related | [Credentials](003-credentials.md), [MCP and CLI](005-mcp-and-cli.md), [The proof](006-end-to-end-proof.md), [Protocol compatibility](009-protocol-compatibility.md), [ADR 007](007-connector-forwarder.md), [ADR 008](008-connector-dynamic-client-registration.md) |
+| Related | [Credentials](003-credentials.md), [MCP and CLI](005-mcp-and-cli.md), [The proof](006-end-to-end-proof.md), [Protocol compatibility](009-protocol-compatibility.md), [ADR 007](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-connector-forwarder.md), [ADR 008](https://github.com/tumpel/control-plane/blob/main/doc/adr/008-connector-dynamic-client-registration.md) |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 
@@ -30,9 +30,9 @@ Out of scope: the dashboard, a marketplace, managed MCP hosting, host or cloud r
 2. R2: Recall is the first connector. Source: ruled draft, 2026-11-16 (BR-2).
 3. R3: An Owner connects a server with OAuth "like claude.ai custom connectors" or with a token. Every operation is one MCP tool and one CLI command, so chat can start OAuth. Source: owner's brief and ruled draft (FR-4).
 4. R4: Owners manage connectors. A connected account serves every session in the tenant. Source: D12.
-5. R5: A tool call keeps working across access-token expiry in every catalog harness. The refresh token never leaves the tenant Durable Object. Source: ruling 3 of 2026-11-16 (mid-turn refresh) and [Architecture](architecture.md) rule 5.
+5. R5: A tool call keeps working across access-token expiry in every catalog harness. The refresh token never leaves the tenant Durable Object. Source: ruling 3 of 2026-11-16 (mid-turn refresh) and [Architecture](https://github.com/tumpel/control-plane/blob/main/rules/architecture.md) rule 5.
 6. R6: No connector credential appears on a command line, in a snapshot, an API read, a log, a transcript or a channel ledger. Source: ruled draft (NFR-1, NFR-2).
-7. R7: Every phase has a time limit and a named failure that names the connector and the fix. Source: [Errors](errors.md) rule 9.
+7. R7: Every phase has a time limit and a named failure that names the connector and the fix. Source: [Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md) rule 9.
 8. R8: Tumpel documents a connector path only after the end-to-end proof runs it. Source: ruled draft (NFR-6).
 
 ## Attachments
@@ -43,7 +43,7 @@ A tenant config persona lists its connectors by name. The tenant transaction res
 
 ## API and MCP surface
 
-Decision D4: TypeSpec models every operation. `StaticConnector` and `OAuthConnector` are two variant models with no `kind` field ([TypeSpec](typespec.md) rule 6). Every write is conditional on `updatedAt`. Reads expose metadata, readiness, expiry and the sanitized failure.
+Decision D4: TypeSpec models every operation. `StaticConnector` and `OAuthConnector` are two variant models with no `kind` field ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 6). Every write is conditional on `updatedAt`. Reads expose metadata, readiness, expiry and the sanitized failure.
 
 | REST under `/v1`                                   | Operation                           | Input and result                                               |
 | -------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------- |
@@ -86,7 +86,7 @@ Reauthorization replaces the grant row in place after a successful exchange. A r
 
 Decision D6: the Worker is the OAuth client of the [MCP authorization spec](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization). It discovers protected-resource and authorization-server metadata and pins the issuer and resource. It requires HTTPS and S256. It sends `resource` on the authorization and token requests. It blocks private, loopback and link-local destinations through discovery, registration, redirects and exchange. It never forwards a token across an upstream redirect.
 
-The Worker registers a public client through dynamic client registration (RFC 7591) on each authorization. A server that advertises no registration endpoint fails `ConnectorRegistrationUnsupported`. The Worker requests the provider's advertised scopes, with `offline_access` when the provider advertises it. [ADR 008](008-connector-dynamic-client-registration.md) records the provider evidence.
+The Worker registers a public client through dynamic client registration (RFC 7591) on each authorization. A server that advertises no registration endpoint fails `ConnectorRegistrationUnsupported`. The Worker requests the provider's advertised scopes, with `offline_access` when the provider advertises it. [ADR 008](https://github.com/tumpel/control-plane/blob/main/doc/adr/008-connector-dynamic-client-registration.md) records the provider evidence.
 
 An authorize call creates a single-use attempt that lasts 10 minutes. Signed state binds the tenant, connector, attempt and initiating principal, and its stored hash stops a replay. The browser opens provider consent. The callback checks the state, the deadline, the issuer and the initiator's current Owner membership. It redeems the code with the sealed verifier and the exact redirect URI. It stores the bundle before the connector reads Connected. Cloudflare Access must leave the callback reachable.
 
@@ -105,7 +105,7 @@ Each provider's allowlist, consent screen and refresh-grant lifetime are accepta
 
 ## Forwarder
 
-Decision D7: the guest runs one forwarder for every connector ([ADR 007](007-connector-forwarder.md)). A connector whose access token expires with no refresh token fails its calls `ConnectorAuthRefused` until an Owner reconnects it.
+Decision D7: the guest runs one forwarder for every connector ([ADR 007](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-connector-forwarder.md)). A connector whose access token expires with no refresh token fails its calls `ConnectorAuthRefused` until an Owner reconnects it.
 
 Decision D8: the forwarder listens on `127.0.0.1` in each running box. Each connector gets a fixed route, `http://127.0.0.1:<port>/connectors/<connectorId>`. The generated harness config holds these URLs and no secret. The forwarder rejects a foreign `Host` and any browser `Origin`, so a browser in the box reaches no route. It refuses every request with `ConnectorTurnNotRunning` while no turn runs. It strips `Host`, `Origin` and hop-by-hop headers and adds the upstream credential.
 

@@ -6,7 +6,7 @@
 | Scope   | Design only; the tenant Durable Object, the public API, MCP, the CLI, the dashboard, webhooks and Web Push                                                                  |
 | Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [EDD-002](002-host-channel.md), [EDD-005](005-mcp-and-cli.md) |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 
@@ -21,13 +21,13 @@ The client docs set the limits. No Claude app, Codex or Pi honours a pushed MCP 
 1. `tumpel_turn_wait` wakes on turn end only, for at most 50 s. The tenant Durable Object keeps its waiters in an in-memory set, `turnEndWaiters`, so an instance restart drops every waiter.
 2. Only `endTurn` wakes a waiter. The tenant Durable Object also changes session state through `setSessionState` at seven call sites and through direct updates. The HostChannel Durable Object changes host presence, and the tenant Durable Object changes prebuild state. None of these changes signals a client.
 3. The dashboard reads a transcript every 100 ms to 5 s, and the CLI's `--follow` backs off from 250 ms to 5 s. Both learn that a turn ended by reading it again.
-4. [Architecture](architecture.md) rule 4 requires event-driven lifecycle with no polling.
+4. [Architecture](https://github.com/tumpel/control-plane/blob/main/rules/architecture.md) rule 4 requires event-driven lifecycle with no polling.
 
 ## Requirements
 
 1. R1: Domain events such as TurnDone, TurnFailed, SessionIdle, HostOffline and PrebuildDone reach every client: the CLI, the dashboard, and MCP clients including the Claude desktop and phone apps. Source: owner's brief, 2026-11-18.
 2. R2: One durable, ordered log per tenant, with a cursor and replay. Source: owner's brief.
-3. R3: TypeSpec in the protocol package defines every event. Source: [TypeSpec](typespec.md) rule 1.
+3. R3: TypeSpec in the protocol package defines every event. Source: [TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 1.
 4. R4: Every new tenant Durable Object call goes through the Tenant API. Source: [RFC: Tenant API](RFC-TUM-TenantApi.md) D1.
 5. R5: The RFC states what each client can receive per its own docs, and says where the docs are silent. Source: owner's brief.
 6. R6: An event never starts work. Source: tenet 3.
@@ -61,7 +61,7 @@ Decision D1: The protocol package defines one model per event and a discriminate
 | `PrebuildDone`    | A prebuild enters `Done`          | `prebuildId`, `repository`                |
 | `PrebuildFailed`  | A prebuild enters `Failed`        | `prebuildId`, `repository`, `phase`       |
 
-Each payload is complete for its event, so no event has an optional field ([TypeSpec](typespec.md) rule 6). A new event type is an additive change. A changed payload is a new event type.
+Each payload is complete for its event, so no event has an optional field ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 6). A new event type is an additive change. A changed payload is a new event type.
 
 Tumpel derives every event from control-plane state. It never reads a transcript to make one (tenet 2).
 
@@ -120,17 +120,17 @@ A channel would need a local stdio server, a place on Anthropic's allowlist and 
 
 ## Webhooks
 
-Decision D7: an Owner registers a webhook endpoint with a URL and a list of event types. Operations `WebhookEndpoints_create`, `_list`, `_get` and `_delete` follow [API](api.md) rule 5. A new `WebhookSender` Durable Object, one per endpoint, keeps the endpoint's cursor and an alarm. After each append, the tenant Durable Object pokes the senders whose filter matches. A sender reads `ListEvents` after its cursor and POSTs each event as JSON, in order. It moves its cursor on a 2xx answer.
+Decision D7: an Owner registers a webhook endpoint with a URL and a list of event types. Operations `WebhookEndpoints_create`, `_list`, `_get` and `_delete` follow [API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 5. A new `WebhookSender` Durable Object, one per endpoint, keeps the endpoint's cursor and an alarm. After each append, the tenant Durable Object pokes the senders whose filter matches. A sender reads `ListEvents` after its cursor and POSTs each event as JSON, in order. It moves its cursor on a 2xx answer.
 
 On a failure, the sender's alarm retries after 1 minute and doubles the wait each time. After 10 retries, the endpoint reads `Failing` with the last status, and the sender stops until an Owner recreates the endpoint. Delivery is at least once. A receiver drops a repeated `eventId`.
 
-The control plane signs each request with an Ed25519 key per tenant, which the key-store port derives. `GET /v1/webhook-signing-key` returns the public key. No signing secret exists, so none travels over MCP ([API](api.md) rule 6).
+The control plane signs each request with an Ed25519 key per tenant, which the key-store port derives. `GET /v1/webhook-signing-key` returns the public key. No signing secret exists, so none travels over MCP ([API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 6).
 
 A tenant points a webhook at a relay of its choice, for example an ntfy topic ([ntfy publish](https://docs.ntfy.sh/publish/)).
 
 ## Web Push
 
-Decision D8: the dashboard becomes an installable web app with a manifest and a service worker. A member opts in per device. The browser's push subscription goes to `PushSubscriptions_create` with the event types to notify. A `WebhookSender` with a push variant delivers it. It encrypts the payload per RFC 8291 ([RFC 8291](https://www.rfc-editor.org/rfc/rfc8291)) and signs a VAPID token per RFC 8292 ([RFC 8292](https://www.rfc-editor.org/rfc/rfc8292)). The VAPID key pair is a tofu resource ([Architecture](architecture.md) rule 9). A 404 or 410 from the push service deletes the subscription.
+Decision D8: the dashboard becomes an installable web app with a manifest and a service worker. A member opts in per device. The browser's push subscription goes to `PushSubscriptions_create` with the event types to notify. A `WebhookSender` with a push variant delivers it. It encrypts the payload per RFC 8291 ([RFC 8291](https://www.rfc-editor.org/rfc/rfc8291)) and signs a VAPID token per RFC 8292 ([RFC 8292](https://www.rfc-editor.org/rfc/rfc8292)). The VAPID key pair is a tofu resource ([Architecture](https://github.com/tumpel/control-plane/blob/main/rules/architecture.md) rule 9). A 404 or 410 from the push service deletes the subscription.
 
 The notification names the session and the outcome, for example "Turn completed in fix-login". A tap opens the session in the dashboard. On iOS, the member adds the dashboard to the Home Screen first. This is the phone path for every Claude user, because no Claude mobile app receives a pushed MCP event.
 
@@ -140,7 +140,7 @@ Decision D9: Tumpel exposes `tumpel://events` as an MCP resource and serves `sub
 
 ## Delivery
 
-Decision D10: each slice is one PR. Protocol slices land and release first, and the control-plane change bumps the three tarball URLs ([TypeSpec](typespec.md) rule 2).
+Decision D10: each slice is one PR. Protocol slices land and release first, and the control-plane change bumps the three tarball URLs ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 2).
 
 | Slice | Component        | Change                                                                                                                                       |
 | ----- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -163,7 +163,7 @@ Out of scope: events from transcript content, per-member event visibility, MCP T
 
 ### Why one operation for long poll and stream?
 
-[API](api.md) rule 2 forbids a second operation for the same read. The stream is the same read over a WebSocket upgrade (D3).
+[API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 2 forbids a second operation for the same read. The stream is the same read over a WebSocket upgrade (D3).
 
 ### Can a Claude phone conversation get pushed a turn result?
 
