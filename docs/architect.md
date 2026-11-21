@@ -18,8 +18,8 @@ You turn one goal into a stage breakdown. You never implement.
 2. Order stages by dependency. A stage never assumes work from a later stage.
 3. Every stage names the crates or packages it touches, the tests that prove it, and what gates it: a prior stage, a decision or a contract.
 4. Merge work that lands naturally in one PR into one stage.
-5. Mark every stage that needs the owner's approval first: a breaking API change, a new operation ([API](api.md)), a schema migration, or a change to CI or infrastructure.
-6. Write in the voice of [Writing](writing.md).
+5. Mark every stage that needs the owner's approval first: a breaking API change, a new operation ([API](https://github.com/tumpel/control-plane/blob/main/rules/api.md)), a schema migration, or a change to CI or infrastructure.
+6. Write in the voice of [Writing](https://github.com/tumpel/control-plane/blob/main/rules/writing.md).
 
 ## Filing
 

@@ -3,9 +3,9 @@
 | Field   | Value                                                                                                                                                                                                                                                                               |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Proposed                                                                                                                                                                                                                                                                            |
-| Related | [ADR-001](001-control-plane-on-cloudflare.md), [ADR-002](002-multi-harness-provider-keys.md), [ADR-003](003-host-channel-dials-out-provider-agnostic.md), [ADR-004](004-typespec-to-rust-via-secondary-tooling.md), [ADR-005](005-hosted-mcp.md) |
+| Related | [ADR-001](https://github.com/tumpel/control-plane/blob/main/doc/adr/001-control-plane-on-cloudflare.md), [ADR-002](https://github.com/tumpel/control-plane/blob/main/doc/adr/002-multi-harness-provider-keys.md), [ADR-003](https://github.com/tumpel/control-plane/blob/main/doc/adr/003-host-channel-dials-out-provider-agnostic.md), [ADR-004](https://github.com/tumpel/control-plane/blob/main/doc/adr/004-typespec-to-rust-via-secondary-tooling.md), [ADR-005](https://github.com/tumpel/control-plane/blob/main/doc/adr/005-hosted-mcp.md) |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 
@@ -153,7 +153,7 @@ Cloudflare hosts the control plane (ADR-001). Tumpel is multi-harness, with pers
 
 **Channel ordering and reconnect.** Every message carries a sequence number and an acknowledgement. After a reconnect, each side resends what the other has not acknowledged, and the receiver drops duplicates.
 
-**Repository access is a GitHub App installation token.** Every self-hosted control plane registers one GitHub App per stage at its `/github/app/setup` page. Each tenant installs it. Each turn gets an unscoped token for every installation the tenant holds, and the guest routes each token by repository owner ([ADR-009](009-turn-token-reaches-every-installation.md)).
+**Repository access is a GitHub App installation token.** Every self-hosted control plane registers one GitHub App per stage at its `/github/app/setup` page. Each tenant installs it. Each turn gets an unscoped token for every installation the tenant holds, and the guest routes each token by repository owner ([ADR-009](https://github.com/tumpel/control-plane/blob/main/doc/adr/009-turn-token-reaches-every-installation.md)).
 
 **MCP and CLI parity is a build check.** Every tenant operation is one MCP tool and one CLI command on the same handler, and the build fails on a gap. Only the OAuth, browser-only, host channel and release endpoints stay off MCP, and secret values never pass through it.
 

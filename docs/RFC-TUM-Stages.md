@@ -4,9 +4,9 @@
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Draft                                                                                                                                                 |
 | Scope   | Design only; the split into backend, infra and deploy repositories, `packages/control-plane/infra`, both `wrangler.jsonc` files, releases, CI runners |
-| Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [ADR-001](001-control-plane-on-cloudflare.md), [Deploy](https://github.com/tumpel/deploy/blob/main/doc/deploy.md), mvhenten/tumpel#291                   |
+| Related | [RFC: Tumpel](RFC-TUM-Tumpel.md), [ADR-001](https://github.com/tumpel/control-plane/blob/main/doc/adr/001-control-plane-on-cloudflare.md), [Deploy](https://github.com/tumpel/deploy/blob/main/doc/deploy.md), mvhenten/tumpel#291                   |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 

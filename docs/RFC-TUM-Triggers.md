@@ -4,9 +4,9 @@
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Proposed                                                                                                                                                                                                                         |
 | Scope   | Design only; the GitHub webhook in the Worker, the tenant config, the tenant Durable Object, the session token scope, the public API, MCP and the CLI                                                                            |
-| Related | [RFC: Foreman](RFC-TUM-Foreman.md), [RFC: Events](RFC-TUM-Events.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [Tenant config](config.md), [ADR 000: tenets](000-tenets.md), [EDD-006](006-end-to-end-proof.md) |
+| Related | [RFC: Foreman](RFC-TUM-Foreman.md), [RFC: Events](RFC-TUM-Events.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [Tenant config](config.md), [ADR 000: tenets](https://github.com/tumpel/control-plane/blob/main/doc/adr/000-tenets.md), [EDD-006](006-end-to-end-proof.md) |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 
@@ -36,7 +36,7 @@ The first use is a required `agent-review` commit status. The repository owns th
 
 ## The trigger
 
-Decision D1: a trigger holds these fields. Every field is mandatory ([Data modeling](data-modeling.md) rule 3).
+Decision D1: a trigger holds these fields. Every field is mandatory ([Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md) rule 3).
 
 | Field         | Meaning                                                                     |
 | ------------- | --------------------------------------------------------------------------- |
@@ -83,7 +83,7 @@ The adapter knows which payload field holds the commit for each event type: `sha
 
 Decision D8: `APP_EVENTS` shrinks to `workflow_run`, which prebuilds use, plus the event types triggers accept: `pull_request`, `push` and `status`. GitHub always sends `installation`. Apply refuses a trigger on another event type with 422 `InvalidRequest`. A new event type for triggers is a manifest change. GitHub reads the manifest only when it creates the App, so an existing stage's operator changes the App's event list in its GitHub settings once.
 
-Decision D9: the filter is routing data, so it lives in the central database ([Data modeling](data-modeling.md) rule 1): `trigger_routes (trigger_id, tenant_id, source, event)` with an index on `(tenant_id, source, event)`, and `trigger_conditions (trigger_id, field, value)`. The rest of the trigger lives in the tenant database. For each delivery, the adapter reads the routes of the installation's tenant for that event type with their conditions, and drops the delivery when none match. The tenant Durable Object never wakes for an unmatched delivery (tenet 8). Apply writes the routes after the tenant commit, as it writes host labels now. A failed route write leaves the trigger silent, and apply reports it.
+Decision D9: the filter is routing data, so it lives in the central database ([Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md) rule 1): `trigger_routes (trigger_id, tenant_id, source, event)` with an index on `(tenant_id, source, event)`, and `trigger_conditions (trigger_id, field, value)`. The rest of the trigger lives in the tenant database. For each delivery, the adapter reads the routes of the installation's tenant for that event type with their conditions, and drops the delivery when none match. The tenant Durable Object never wakes for an unmatched delivery (tenet 8). Apply writes the routes after the tenant commit, as it writes host labels now. A failed route write leaves the trigger silent, and apply reports it.
 
 ## The start
 

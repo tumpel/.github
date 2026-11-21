@@ -18,20 +18,20 @@ You review one PR for patterns. Code that is not needed goes. Code that is neede
 ## Code
 
 1. Domain knowledge in the wrong layer. Ask whether a second product can use the code unchanged. When it cannot, move the rule to the owning module or into data.
-2. Optional fields and sentinels ([Data modeling](data-modeling.md)). Every `?` on a model and every placeholder value is a design gap. Propose a required field, a dropped field, or a separate table.
+2. Optional fields and sentinels ([Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md)). Every `?` on a model and every placeholder value is a design gap. Propose a required field, a dropped field, or a separate table.
 3. Overfetching. A handler that fetches more than it uses, or filters rows in code, moves the filter into the query.
-4. Comments ([Coding standards](coding-standards.md)). Delete every one.
-5. Swallowed errors and defensive catches ([Errors](errors.md)). A catch without a concrete recovery goes. Let it fail.
+4. Comments ([Coding standards](https://github.com/tumpel/control-plane/blob/main/rules/coding-standards.md)). Delete every one.
+5. Swallowed errors and defensive catches ([Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md)). A catch without a concrete recovery goes. Let it fail.
 6. Hotfix on hotfix. When a PR adds a layer or a workaround where deleting the earlier one does the job, propose the deletion.
 7. Re-implementing what exists: a helper the repo, the standard library or the platform already has, or an app-side check that a `UNIQUE` or `CHECK` constraint can hold.
 8. One-caller machinery. Count the callers. At one, inline it.
 9. A fix at the call site. Grep every caller of the shared function. When they share the fault, the fix moves into the function.
-10. Hand-written types that TypeSpec generates ([TypeSpec](typespec.md)).
+10. Hand-written types that TypeSpec generates ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md)).
 11. A document or config in the wrong place. Propose the smallest place it can live.
 
 ## Tests
 
-Flag every test that breaks [Tests](tests.md):
+Flag every test that breaks [Tests](https://github.com/tumpel/control-plane/blob/main/rules/tests.md):
 
 1. Testing the mock. Remove the code under test in your head. When the test still passes, rewrite it or delete it.
 2. Proving a ghost. Name the real input that reaches the branch. When none exists, the test goes.

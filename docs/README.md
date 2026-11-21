@@ -14,7 +14,7 @@ Design and product docs for Tumpel.
 - [Tenant config](config.md)
 - [GitHub Actions prebuilds](github-actions-prebuild.md)
 - [Guest image](guest-image.md)
-- [Public surface](surface.md)
+- [Public surface](https://github.com/tumpel/control-plane/blob/main/doc/surface.md)
 
 ## RFCs
 
@@ -42,19 +42,19 @@ Design and product docs for Tumpel.
 
 ## ADRs
 
-- [000. Tenets](000-tenets.md)
-- [001. Control plane on Cloudflare](001-control-plane-on-cloudflare.md)
-- [002. Provider keys follow personas, secret sets and dispatch credentials](002-multi-harness-provider-keys.md)
-- [003. The host channel dials out and is defined before any backend](003-host-channel-dials-out-provider-agnostic.md)
-- [004. TypeSpec to Rust via secondary tooling](004-typespec-to-rust-via-secondary-tooling.md)
-- [005. The MCP server is hosted](005-hosted-mcp.md)
-- [006. CircleCI connects through OAuth with PKCE and a loopback redirect](006-circleci-oauth-loopback.md)
-- [007. Connector tokens reach harnesses through a guest-local forwarder](007-connector-forwarder.md)
-- [007. A turn's goal runs on the harness's goal feature](007-turn-goal-on-harness-goal-feature.md)
-- [008. Connectors register OAuth clients through dynamic client registration only](008-connector-dynamic-client-registration.md)
-- [008. A snapshot follows every turn](008-snapshot-after-every-turn.md)
-- [009. Every turn's GitHub token reaches every installation](009-turn-token-reaches-every-installation.md)
-- [010. The database holds metadata, and bulk data lives in R2](010-bulk-data-out-of-the-database.md)
+- [000. Tenets](https://github.com/tumpel/control-plane/blob/main/doc/adr/000-tenets.md)
+- [001. Control plane on Cloudflare](https://github.com/tumpel/control-plane/blob/main/doc/adr/001-control-plane-on-cloudflare.md)
+- [002. Provider keys follow personas, secret sets and dispatch credentials](https://github.com/tumpel/control-plane/blob/main/doc/adr/002-multi-harness-provider-keys.md)
+- [003. The host channel dials out and is defined before any backend](https://github.com/tumpel/control-plane/blob/main/doc/adr/003-host-channel-dials-out-provider-agnostic.md)
+- [004. TypeSpec to Rust via secondary tooling](https://github.com/tumpel/control-plane/blob/main/doc/adr/004-typespec-to-rust-via-secondary-tooling.md)
+- [005. The MCP server is hosted](https://github.com/tumpel/control-plane/blob/main/doc/adr/005-hosted-mcp.md)
+- [006. CircleCI connects through OAuth with PKCE and a loopback redirect](https://github.com/tumpel/control-plane/blob/main/doc/adr/006-circleci-oauth-loopback.md)
+- [007. Connector tokens reach harnesses through a guest-local forwarder](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-connector-forwarder.md)
+- [007. A turn's goal runs on the harness's goal feature](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-turn-goal-on-harness-goal-feature.md)
+- [008. Connectors register OAuth clients through dynamic client registration only](https://github.com/tumpel/control-plane/blob/main/doc/adr/008-connector-dynamic-client-registration.md)
+- [008. A snapshot follows every turn](https://github.com/tumpel/control-plane/blob/main/doc/adr/008-snapshot-after-every-turn.md)
+- [009. Every turn's GitHub token reaches every installation](https://github.com/tumpel/control-plane/blob/main/doc/adr/009-turn-token-reaches-every-installation.md)
+- [010. The database holds metadata, and bulk data lives in R2](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md)
 
 ## Personas
 
@@ -65,17 +65,17 @@ Design and product docs for Tumpel.
 
 ## Rules
 
-- [API](api.md)
-- [Architecture](architecture.md)
-- [Coding standards](coding-standards.md)
-- [Commits and pull requests](commits-and-prs.md)
-- [Data modeling](data-modeling.md)
-- [Errors](errors.md)
-- [Storage](storage.md)
-- [Tests](tests.md)
-- [TypeScript](typescript.md)
-- [TypeSpec](typespec.md)
-- [Writing](writing.md)
+- [API](https://github.com/tumpel/control-plane/blob/main/rules/api.md)
+- [Architecture](https://github.com/tumpel/control-plane/blob/main/rules/architecture.md)
+- [Coding standards](https://github.com/tumpel/control-plane/blob/main/rules/coding-standards.md)
+- [Commits and pull requests](https://github.com/tumpel/control-plane/blob/main/rules/commits-and-prs.md)
+- [Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md)
+- [Errors](https://github.com/tumpel/control-plane/blob/main/rules/errors.md)
+- [Storage](https://github.com/tumpel/control-plane/blob/main/rules/storage.md)
+- [Tests](https://github.com/tumpel/control-plane/blob/main/rules/tests.md)
+- [TypeScript](https://github.com/tumpel/control-plane/blob/main/rules/typescript.md)
+- [TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md)
+- [Writing](https://github.com/tumpel/control-plane/blob/main/rules/writing.md)
 
 ## Agent instructions
 

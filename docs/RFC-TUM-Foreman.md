@@ -4,9 +4,9 @@
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Status  | Proposed                                                                                                                                                                                                                                                                                                                  |
 | Scope   | Design only; the tenant Durable Object, the public API, MCP, the CLI, the connector token endpoint and the event catalogue                                                                                                                                                                                                |
-| Related | [RFC: Events](RFC-TUM-Events.md), [RFC: Connectors](RFC-TUM-Connectors.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [ADR 007: turn goal](007-turn-goal-on-harness-goal-feature.md), [Claude Code goal docs](https://code.claude.com/docs/en/goal), [EDD-006](006-end-to-end-proof.md) |
+| Related | [RFC: Events](RFC-TUM-Events.md), [RFC: Connectors](RFC-TUM-Connectors.md), [RFC: Tenant API](RFC-TUM-TenantApi.md), [ADR 007: turn goal](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-turn-goal-on-harness-goal-feature.md), [Claude Code goal docs](https://code.claude.com/docs/en/goal), [EDD-006](006-end-to-end-proof.md) |
 
-Storage follows [ADR-010](010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
+Storage follows [ADR-010](https://github.com/tumpel/control-plane/blob/main/doc/adr/010-bulk-data-out-of-the-database.md). The database holds metadata only, and bulk data lives in R2.
 
 ## Summary
 
@@ -21,7 +21,7 @@ The foreman reacts only to its crew: the sessions that carry the tags its subscr
 3. A session holds no tags. The `sessions` table has no such column, and only hosts carry labels.
 4. A session records no origin. A call from inside a box reaches the Tumpel MCP server through the connector forwarder with the access token of the connector's OAuth grant (RFC: Connectors D2, D9). The Worker's `Caller` holds a tenant, a principal and a role, so two sessions on one grant look the same.
 5. Tumpel learns no goal verdict. Claude Code records a met goal only in its transcript ([goal docs](https://code.claude.com/docs/en/goal)), and ADR 007 forbids the control plane to read the transcript to judge a goal.
-6. A session has no way to ask a person a question. [Public surface](surface.md) lists no such operation.
+6. A session has no way to ask a person a question. [Public surface](https://github.com/tumpel/control-plane/blob/main/doc/surface.md) lists no such operation.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ The foreman reacts only to its crew: the sessions that carry the tags its subscr
 4. R4: A session's origin records the session that started it, so the session inherits its crew tags. Source: owner's brief and rulings.
 5. R5: An expiry time and a pause after 10 consecutive crew failures stop a foreman that reacts to its crew without end. The expiry, measured in days, is the runtime limit. Source: owner's brief and review.
 6. R6: Tenets 1, 2 and 8 hold: the guest stays unchanged, no transcript decides a delivery, and no Durable Object waits.
-7. R7: Every new operation follows [API](api.md) rule 1 and 5.
+7. R7: Every new operation follows [API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 1 and 5.
 8. R8: A foreman always runs with a goal and ends its subscription with an explicit completion signal. Source: owner's review and rulings.
 9. R9: A foreman can pause itself with a short note that reaches the person as a notification. A reply turn and a resume restart it. Source: owner's review.
 10. R10: The Tumpel MCP server's instructions and tool descriptions advertise subscriptions, so an agent handed a long job learns that it can set up a foreman. Source: owner's review.
@@ -40,7 +40,7 @@ The foreman reacts only to its crew: the sessions that carry the tags its subscr
 
 Decision D1: "foreman" is this RFC's name for a session with one or more Active subscriptions. No type, table, field or enum value names a foreman. The session runs any persona. `Subscriptions_create` gives it the Tumpel MCP (D8), so it can start sessions and send turns through the existing MCP tools.
 
-Decision D2: a subscription holds these fields. Every field is mandatory ([Data modeling](data-modeling.md) rule 3). Subscriptions live in their own tenant table.
+Decision D2: a subscription holds these fields. Every field is mandatory ([Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md) rule 3). Subscriptions live in their own tenant table.
 
 | Field                    | Meaning                                                                         |
 | ------------------------ | ------------------------------------------------------------------------------- |
@@ -54,7 +54,7 @@ Decision D2: a subscription holds these fields. Every field is mandatory ([Data 
 | `cursorEventId`          | The last event it has delivered                                                 |
 | `crewFailuresInARow`     | Crew turns and sessions that failed since the last crew turn completed (D13)    |
 | `deliveryFailuresInARow` | Delivery turns that failed since the last one completed (D12)                   |
-| `state`                  | One model per state, each with its reason ([TypeSpec](typespec.md) rule 6), listed below |
+| `state`                  | One model per state, each with its reason ([TypeSpec](https://github.com/tumpel/control-plane/blob/main/rules/typespec.md) rule 6), listed below |
 
 The three states and their reasons:
 
@@ -84,11 +84,11 @@ Decision D5: a subscription ends when its session is archived or fails, when `ex
 
 ## Tags
 
-Decision D6: tags group sessions in any combination, apart from host labels. A tag is a lower-case string matching `^[a-z0-9][a-z0-9:._-]{0,62}$`. Each session holds up to 16. The tenant table `session_tags (session_id, tag)` stores them, with that pair as its primary key, so a crew match filters in the query ([Data modeling](data-modeling.md) rule 10).
+Decision D6: tags group sessions in any combination, apart from host labels. A tag is a lower-case string matching `^[a-z0-9][a-z0-9:._-]{0,62}$`. Each session holds up to 16. The tenant table `session_tags (session_id, tag)` stores them, with that pair as its primary key, so a crew match filters in the query ([Data modeling](https://github.com/tumpel/control-plane/blob/main/rules/data-modeling.md) rule 10).
 
 The tag operations take the shape of the host label operations (`Hosts_setLabels`, `Hosts_patchLabels`):
 
-1. `Sessions_start` and `Sessions_startFromIssue` take an optional `tags` input, an additive change ([API](api.md) rule 3).
+1. `Sessions_start` and `Sessions_startFromIssue` take an optional `tags` input, an additive change ([API](https://github.com/tumpel/control-plane/blob/main/rules/api.md) rule 3).
 2. `Sessions_setTags` replaces a session's tags. `Sessions_patchTags` takes `add` and `remove`.
 3. `Sessions_list` takes a repeatable `tag` filter.
 4. Every session read returns `tags`.
@@ -138,7 +138,7 @@ Decision D15: this RFC changes [RFC: Events](RFC-TUM-Events.md). R6 becomes: an 
 
 ## Goal
 
-Decision D16: every subscription holds a mandatory `goal`, and each delivery turn carries it through the turn goal path of [ADR 007](007-turn-goal-on-harness-goal-feature.md). Tumpel stores the goal in `turn_goals`. At the offer, the control plane folds the prompt and the goal into one `/goal` message, in the form the harness catalog names. The harness's evaluator then judges the goal after each harness turn (goal docs).
+Decision D16: every subscription holds a mandatory `goal`, and each delivery turn carries it through the turn goal path of [ADR 007](https://github.com/tumpel/control-plane/blob/main/doc/adr/007-turn-goal-on-harness-goal-feature.md). Tumpel stores the goal in `turn_goals`. At the offer, the control plane folds the prompt and the goal into one `/goal` message, in the form the harness catalog names. The harness's evaluator then judges the goal after each harness turn (goal docs).
 
 Delivery turns stay short: their fold caps the goal loop at 5 rounds, in place of `GOAL_TURN_CAP` (20). Events that arrive meanwhile wait for the next delivery turn. D23 tells the foreman to delegate heavy work.
 
