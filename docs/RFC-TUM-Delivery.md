@@ -2,7 +2,7 @@
 
 | Field   | Value                                                                                                                                                                                                                                                       |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status  | Proposed                                                                                                                                                                                                                                                    |
+| Status  | Accepted                                                                                                                                                                                                                                                    |
 | Scope   | Design only; the release workflows of every component repository, the assembly and promotion jobs in tumpel/deploy, the supervisor updater, the Workers Builds projects, CI runners and Cloudflare tokens                                                   |
 | Related | [RFC: Stages](https://github.com/mvhenten/tumpel/blob/main/doc/RFC/RFC-TUM-Stages.md), [EDD-008: Supervisor self-update](008-supervisor-self-update.md), [EDD-009: Protocol compatibility](009-protocol-compatibility.md), [ADR 000: tenets](000-tenets.md) |
 
@@ -10,7 +10,7 @@
 
 Each component repository publishes immutable releases, built once, with a sha256 per asset. A job in tumpel/deploy assembles a release candidate, `rc-N`, from the newest release of each component and attaches its pins. A second job promotes one RC to one stage: it checks the bytes, applies infrastructure and migrations, uploads pre-built Worker versions, runs a smoke check and writes `current.json` last. A failed smoke check restores the previous Worker versions.
 
-Every pointer has one writer. Versions only move forward, except through an explicit rollback, which is the previous RC promoted with `rollback=true`. Hosted runners run every job except the guest image build.
+Every pointer has one writer. Versions only move forward, except through an explicit rollback, which is the previous RC promoted with `rollback=true`. Hosted runners run every job except the guest image build. Each workflow builds only what a change touches.
 
 Fourteen PRs, ordered by risk, get there. The first four stop three of the six failures below.
 
@@ -50,6 +50,7 @@ On 2026-11-20 six failures hit the pipeline.
 7. P7: An urgent fix takes the same path as every other change.
 8. P8: No code path depends on the stage.
 9. P9: The database holds metadata only. Block storage lives in R2.
+10. P10: CI builds only the packages a change touches, and only when a release needs them.
 
 ## Target design
 
@@ -102,9 +103,13 @@ Decision D7: a rollback promotes the previous RC with `rollback=true` and takes 
 
 Decision D8: hosted runners run every job. tumpel/deploy goes public, so its minutes are free. One org-level homelab runner builds the guest image, because that build needs KVM and root. It sits in a runner group limited to that workflow, which runs on tags or manual dispatch. A fork PR needs approval and never reaches it. Cloudflare tokens become per-stage GitHub Environment secrets that `tofu` bootstrap mints.
 
+### CI builds
+
+Decision D9: each workflow builds only what changed. Path filters scope every build to its package. The guest image builds only when its inputs change. Release builds run only on a release or a tag. A push that changes only docs or unrelated paths starts no build. Promotion reuses the built artifacts.
+
 ## Migration stages
 
-Decision D9: each stage is one PR, ordered by risk. "Approval" marks a PR that touches CI or infrastructure and needs the owner's explicit approval.
+Decision D10: each stage is one PR, ordered by risk. "Approval" marks a PR that touches CI or infrastructure and needs the owner's explicit approval.
 
 | #   | Repository                  | Change                                                                                                        | Gate               | Approval  | Stops failure |
 | --- | --------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------ | --------- | ------------- |
@@ -121,18 +126,20 @@ Decision D9: each stage is one PR, ordered by risk. "Approval" marks a PR that t
 | 11  | deploy                      | The promotion job, smoke check, automatic Worker rollback and Environment secrets; delete the Builds projects | 9, RFC: Stages D16 | CI, infra | 4, 6          |
 | 12  | deploy, infra               | A second stage with a seeded tenant                                                                           | 11                 | infra     |               |
 | 13  | protocol, supervisor        | An additive `rollback` field in `ReleaseManifest` and the guarded downgrade                                   | 2                  |           |               |
-| 14  | supervisor, cli, protocol   | Promote copies the RC's assets and stops rebuilding                                                           | open question 2    | CI        |               |
+| 14  | supervisor, cli, protocol   | Promote copies the RC's assets and stops rebuilding                                                           | D12                | CI        |               |
 
-## Open questions
+## Decisions
 
-1. Second stage. Recommendation: dev stays the stage users sign in to. A new `staging` stage receives every RC automatically, and promotion to dev is manual.
-2. Stable component releases. Recommendation: copy the RC's bytes under the stable tag and never rebuild.
-3. Where pins live. Recommendation: an asset on the `rc-N` release in tumpel/deploy, with no pin file on main.
-4. Supervisor crates on crates.io. Recommendation: publish only `tumpel-api`. The binary is what ships.
-5. What starts the assembly job. Recommendation: a dispatch from each component release, plus manual runs. No schedule.
-6. A failed smoke check. Recommendation: restore the previous Worker versions automatically.
-7. Image layers. Recommendation: content-addressed objects in R2, with a manifest on the GitHub release. A release asset caps at 2 GiB, and the harness licences are unresolved.
-8. RFC: Stages. Recommendation: this RFC replaces its D12 to D15 and its open question on deploy triggers. Its stack and stage config parts stay.
+Recorded 2026-11-20.
+
+1. D11: a new `staging` stage receives every RC automatically. Dev stays the stage users sign in to, and a person promotes an RC to dev.
+2. D12: a stable component release copies the RC's bytes under the stable tag and never rebuilds.
+3. D13: the pins are an asset on the `rc-N` release in tumpel/deploy. Main holds no pin file.
+4. D14: only `tumpel-api` goes to crates.io. The supervisor ships as a binary.
+5. D15: each component release dispatches the assembly job, and a person can run it by hand. It runs on no schedule.
+6. D16: a failed smoke check restores the previous Worker versions automatically.
+7. D17: image layers are content-addressed objects in R2, with a manifest on the GitHub release.
+8. D18: this RFC replaces D12 to D15 of RFC: Stages and its open question on deploy triggers. Its stack and stage config parts stay.
 
 ## Appendix of terms
 
