@@ -12,6 +12,7 @@ Design and product docs for Tumpel.
 ## Guides
 
 - [Tenant config](config.md)
+- [Limits and how to size them](limits.md)
 - [GitHub Actions prebuilds](github-actions-prebuild.md)
 - [Guest image](guest-image.md)
 - [Public surface](https://github.com/tumpel/control-plane/blob/main/doc/surface.md)
